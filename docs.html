@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KIN Docs · How forks feed their parent</title>
+<meta name="description" content="How KIN works: forks paired against their parent on Raydium LaunchLab, graduation and locking, fees, risks and FAQ.">
+<meta name="theme-color" content="#060B14">
+<meta property="og:title" content="KIN Docs"><meta property="og:image" content="/og.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Crect width='1000' height='1000' rx='220' fill='%239FD8FF'/%3E%3Cg transform='translate(500 500) scale(1.18) translate(-500 -550)'%3E%3Cpath d='M500 585 L306 391 M500 585 L500 310 M500 585 L694 391' stroke='%23060B14' stroke-width='46' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='306' cy='391' r='60' fill='%23060B14'/%3E%3Ccircle cx='500' cy='310' r='60' fill='%23060B14'/%3E%3Ccircle cx='694' cy='391' r='60' fill='%23060B14'/%3E%3Cpath d='M500 560 L584 670 L500 790 L416 670 Z' fill='%23060B14'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#060B14;--panel:#0D1626;--line:#16294A;--line-2:#1F3A62;--ink:#EAF3FF;--ink-2:#B3C3DB;--ink-3:#7F93B3;--accent:#9FD8FF;--down:#FF6B8E;--sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;--mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1240px;margin-inline:auto;padding-inline:clamp(16px,3.2vw,32px)}
+.top{position:sticky;top:0;z-index:10;background:rgba(6,11,20,.94);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:28px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;letter-spacing:.18em}
+.brand svg{width:22px;height:22px}
+.links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+.links a:hover,.links a.on{color:var(--ink)}
+.btn{margin-left:auto;display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:10px;background:var(--accent);color:var(--bg);font-size:13px;font-weight:500}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px;padding:48px 0 80px}
+.toc{position:sticky;top:92px;align-self:start;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.toc span{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.toc a{padding:6px 10px;border-radius:8px;color:var(--ink-2);border:1px solid transparent}
+.toc a:hover{color:var(--ink);border-color:var(--line)}
+article{max-width:720px}
+h1{margin:0 0 12px;font-size:clamp(32px,4vw,44px);font-weight:600;letter-spacing:-.035em;line-height:1.05}
+.lead{margin:0;font-size:18px;color:var(--ink-2)}
+h2{margin:56px 0 12px;font-size:24px;font-weight:600;letter-spacing:-.02em;scroll-margin-top:84px}
+h3{margin:26px 0 6px;font-size:17px;font-weight:500}
+p{margin:0 0 12px;color:var(--ink-2)}
+ol,ul{margin:0 0 12px;padding-left:20px;color:var(--ink-2)}
+li{margin:4px 0}
+code,.m{font-family:var(--mono);font-size:.92em;color:var(--ink)}
+.box{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;margin:16px 0}
+.box div{display:flex;justify-content:space-between;gap:16px;padding:11px 16px;border-bottom:1px solid var(--line);font-size:15px}
+.box div:last-child{border-bottom:0}
+.box span{color:var(--ink-2)}
+.box em{font-style:normal;font-family:var(--mono);font-size:14px;text-align:right}
+.warn{border:1px solid rgba(255,107,142,.35);border-radius:12px;padding:14px 16px;margin:16px 0}
+.warn b{color:var(--down);font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
+footer{border-top:1px solid var(--line);padding:24px 0 36px;font-size:12.5px;color:var(--ink-3)}
+@media (max-width:860px){.links{display:none}.layout{grid-template-columns:minmax(0,1fr);gap:24px;padding-top:28px}.toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px}.toc span{width:100%;margin:0}.toc a{border-color:var(--line);padding:4px 10px;font-size:13px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap nav">
+  <a class="brand" href="index.html"><svg viewBox="225 252 550 550" fill="none" aria-hidden="true"><path d="M500 585 L306 391 M500 585 L500 310 M500 585 L694 391" stroke="#9FD8FF" stroke-width="34" stroke-linecap="round" fill="none"/><circle cx="306" cy="391" r="52" fill="#EAF3FF"/><circle cx="500" cy="310" r="52" fill="#EAF3FF"/><circle cx="694" cy="391" r="52" fill="#EAF3FF"/><path d="M500 560 L584 670 L500 790 L416 670 Z" fill="#9FD8FF"/></svg>KIN</a>
+  <nav class="links"><a href="index.html#explore">Explore</a><a href="index.html#launch">Launch</a><a href="index.html#family">Family trees</a><a href="docs.html" class="on">Docs</a></nav>
+  <a class="btn" href="index.html#launch">Launch a fork</a>
+</div></header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="On this page"><span>Docs</span><a href="#overview">Overview</a><a href="#pairing">How pairing works</a><a href="#graduation">Graduation and locking</a><a href="#fees">Fees</a><a href="#launching">Launching a fork</a><a href="#risks">Risks</a><a href="#faq">FAQ</a><a href="#disclaimer">Disclaimer</a></nav>
+  <article>
+    <h1 id="overview">Every fork feeds its parent.</h1>
+    <p class="lead">KIN is a launchpad on Raydium LaunchLab for forks of runners. A fork is paired against its parent’s token instead of SOL, so buying the fork buys the parent, and graduation locks it.</p>
+
+    <h2 id="pairing">How pairing works</h2>
+    <p>On most launchpads a coin’s curve trades against SOL. On KIN the curve of a fork trades against the coin it forked: the parent.</p>
+    <ol>
+      <li>You buy a fork with SOL, like on any launchpad.</li>
+      <li>In the same transaction, your SOL is swapped to the parent token on the open market.</li>
+      <li>The parent tokens go into the fork’s curve, and you receive the fork at curve price.</li>
+    </ol>
+    <p>Selling works the other way: fork back to the parent, and optionally on to SOL.</p>
+
+    <h2 id="graduation">Graduation and locking</h2>
+    <p>Each fork has a graduation target set in parent tokens. It is fixed at launch to equal <span class="m">85 SOL</span> of the parent at that moment.</p>
+    <p>When the curve reaches the target, the liquidity moves to a Raydium CPMM pool, fork against parent, and the LP tokens are burned. The parent tokens in that pool can never be withdrawn by anyone, including KIN.</p>
+    <p>Before graduation, parent tokens sit in the curve and sellers can take them back out. Only graduated forks count as locked on the site.</p>
+
+    <h2 id="fees">Fees</h2>
+    <p>Every trade on a fork’s curve pays a fee in the parent token, because that is what the curve trades in.</p>
+    <div class="box">
+      <div><span>KIN platform fee</span><em>1.74%</em></div>
+      <div><span>Raydium LaunchLab trading fee</span><em>0.25%</em></div>
+      <div><span>Creator fee</span><em>0%</em></div>
+    </div>
+    <p>The KIN platform fee is split three ways:</p>
+    <div class="box">
+      <div><span>Buys back $KIN on the open market</span><em>40%</em></div>
+      <div><span>Burns the parent token</span><em>30%</em></div>
+      <div><span>Treasury: development and servers</span><em>30%</em></div>
+    </div>
+    <p>Burns are run by hand at first and posted on X with the transaction. Automatic on-chain burns come later.</p>
+
+    <h2 id="launching">Launching a fork</h2>
+    <ol>
+      <li>Paste the parent’s CA. KIN looks up its market and shows its price, market cap and liquidity.</li>
+      <li>Pick a name, a ticker and an image.</li>
+      <li>Check what the fork will lock: the graduation target in parent tokens and the share of parent supply.</li>
+      <li>Connect your wallet and launch.</li>
+    </ol>
+    <p>A parent needs a live market, and Raydium needs a quote config for it before its first fork. New parents are added on request.</p>
+
+    <h2 id="risks">Risks</h2>
+    <div class="warn"><b>Two prices in one coin</b>A fork is priced in its parent. If the parent falls, the fork’s value in SOL falls with it, even if nobody sells the fork.</div>
+    <div class="warn"><b>Memecoins can go to zero</b>Forks, parents and $KIN included. Locked liquidity does not protect a price.</div>
+    <div class="warn"><b>Swaps have slippage</b>The SOL to parent swap moves the parent’s price. Thin parents move more. The numbers on the site do not include price impact.</div>
+    <div class="warn"><b>A fork is not its parent</b>Different coin, different holders, different CA. Always check the CA.</div>
+
+    <h2 id="faq">FAQ</h2>
+    <h3>Can I fork any coin?</h3>
+    <p>Any coin LaunchLab accepts as a quote token. The lookup works for every Solana coin with a market.</p>
+    <h3>Why would a parent’s community want forks?</h3>
+    <p>Because on KIN every fork buys their coin, and every graduated fork locks some of it for good. Copies stop draining the original.</p>
+    <h3>Where do I see how much of a coin is locked?</h3>
+    <p>On its family tree page. Paste the CA in Explore or open any “forked from” chip.</p>
+    <h3>How is “$KIN bought back” counted?</h3>
+    <p>It is the $KIN held by the buyback wallet, read from chain.</p>
+    <h3>Will KIN DM me?</h3>
+    <p>Never. There is no presale, no airdrop and no support account. Anyone messaging you as KIN is not us.</p>
+
+    <h2 id="disclaimer">Disclaimer</h2>
+    <p>KIN is software for launching and trading memecoins. Nothing on this site is financial advice. You are responsible for what you buy, sell and launch. Coins launched on KIN are made by their creators, not by KIN.</p>
+  </article>
+</div>
+<footer><div class="wrap">Memecoins can go to zero. A fork is not its parent and moves with the parent’s price. Nothing here is financial advice.</div></footer>
+</body>
+</html>

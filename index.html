@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KIN · Every fork feeds its parent.</title>
+<meta name="description" content="A Raydium LaunchLab launchpad for forks. Every fork is paired against the runner it copies, so every buy buys the original and graduation locks it forever.">
+<meta name="theme-color" content="#060B14">
+<meta property="og:title" content="KIN · Every fork feeds its parent.">
+<meta property="og:description" content="Forks paired against the runner they copy. Every buy buys the original. Graduation locks it on Raydium.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/og.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000'%3E%3Crect width='1000' height='1000' rx='220' fill='%239FD8FF'/%3E%3Cg transform='translate(500 500) scale(1.18) translate(-500 -550)'%3E%3Cpath d='M500 585 L306 391 M500 585 L500 310 M500 585 L694 391' stroke='%23060B14' stroke-width='46' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='306' cy='391' r='60' fill='%23060B14'/%3E%3Ccircle cx='500' cy='310' r='60' fill='%23060B14'/%3E%3Ccircle cx='694' cy='391' r='60' fill='%23060B14'/%3E%3Cpath d='M500 560 L584 670 L500 790 L416 670 Z' fill='%23060B14'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#060B14; --panel:#0D1626; --panel-2:#0A1322; --line:#16294A; --line-2:#1F3A62;
+  --ink:#EAF3FF; --ink-2:#B3C3DB; --ink-3:#7F93B3; --accent:#9FD8FF; --accent-dim:rgba(159,216,255,.14);
+  --up:#4FE0A4; --down:#FF6B8E;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px; --max:1240px; --gut:clamp(16px,3.2vw,32px);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+::selection{background:var(--accent);color:var(--bg)}
+:focus-visible{outline:1.5px solid var(--accent);outline-offset:2px}
+.wrap{max-width:var(--max);margin-inline:auto;padding-inline:var(--gut)}
+.mono{font-family:var(--mono)}
+.muted{color:var(--ink-3)}
+.up{color:var(--up)}.down{color:var(--down)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+section{scroll-margin-top:72px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 18px;border-radius:var(--r);border:1px solid var(--line-2);background:transparent;font-size:14px;font-weight:500;white-space:nowrap;transition:border-color .15s,background .15s,color .15s}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.btn.pri:hover{background:#B8E3FF;border-color:#B8E3FF}
+.btn.sm{height:34px;padding:0 12px;font-size:13px}
+.btn.off,.btn[disabled]{opacity:.5;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px 0 3px;border:1px solid var(--line);border-radius:999px;background:var(--panel-2);font-family:var(--mono);font-size:11.5px;color:var(--ink-2);white-space:nowrap;max-width:100%}
+.chip .av{width:18px;height:18px;font-size:7.5px}
+button.chip:hover{border-color:var(--line-2);color:var(--ink)}
+.dot{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ink-3)}
+.dot.live{color:var(--ink-2)}.dot.live::before{background:var(--up)}
+.dot.off::before{background:var(--down)}
+
+/* avatar */
+.av{position:relative;flex:none;width:32px;height:32px;border-radius:50%;background:#10213A;border:1px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--mono);font-size:10px;font-weight:500;color:var(--accent)}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* nav */
+.top{position:sticky;top:0;z-index:40;background:rgba(6,11,20,.94);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:28px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;letter-spacing:.18em}
+.brand svg{width:22px;height:22px}
+.links{display:flex;gap:22px;font-size:14px;color:var(--ink-2)}
+.links a:hover{color:var(--ink)}
+.nav-r{margin-left:auto;display:flex;align-items:center;gap:10px}
+.wallet{position:relative}
+.toast{position:absolute;right:0;top:calc(100% + 8px);width:280px;padding:12px 14px;background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);font-size:13px;color:var(--ink-2);z-index:50}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:32px;align-items:end;padding:44px 0 30px}
+.hero h1{margin:0;font-size:clamp(38px,5vw,64px);line-height:1;font-weight:600;letter-spacing:-.04em;max-width:15ch;text-wrap:balance}
+.hero p{margin:16px 0 0;font-size:17px;color:var(--ink-2);max-width:36rem}
+.hero .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.fed{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.fed-top{display:flex;align-items:center;gap:10px;min-width:0}
+.fed-top b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fed-num{font-family:var(--mono);font-size:34px;letter-spacing:-.03em;line-height:1}
+.bar{height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px;min-width:2px}
+
+/* feed */
+.feed{overflow:hidden}
+.feed-bar{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel-2)}
+.tabs button{height:30px;padding:0 12px;border:0;border-radius:7px;background:transparent;font-size:13.5px;color:var(--ink-3)}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{background:var(--panel);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.search{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;height:38px;padding:0 6px 0 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel-2)}
+.search:focus-within{border-color:var(--accent)}
+.search svg{flex:none;width:15px;height:15px;color:var(--ink-3)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-family:var(--mono);font-size:13px}
+.search input::placeholder{color:var(--ink-3)}
+.feed-note{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 16px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-3);flex-wrap:wrap}
+.filter{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+.x{border:0;background:none;color:var(--ink-3);font-size:13px;padding:0 4px}
+.x:hover{color:var(--ink)}
+.grid-head,.frow{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.35fr) minmax(0,.85fr) minmax(0,1.3fr) minmax(0,1.05fr) minmax(0,.55fr);gap:14px;align-items:center;padding:0 16px}
+.grid-head{height:36px;border-bottom:1px solid var(--line)}
+.grid-head span{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.grid-head span:nth-child(n+3),.frow>.n{text-align:right}
+.frow{min-height:60px;border-bottom:1px solid var(--line);transition:background .12s}
+.frow:last-child{border-bottom:0}
+.frow.act{cursor:pointer}
+.frow.act:hover{background:var(--panel-2)}
+.c-fork{display:flex;align-items:center;gap:11px;min-width:0}
+.c-fork .nm{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.c-fork b{font-weight:500;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-fork small{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.c-par{min-width:0}
+.n{font-family:var(--mono);font-size:13.5px;white-space:nowrap}
+.n small{display:block;font-size:11px;color:var(--ink-3)}
+.c-prog{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.c-prog .bar{flex:1;max-width:120px}
+.c-prog .pc{font-family:var(--mono);font-size:12.5px;min-width:42px;text-align:right}
+.grad{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(159,216,255,.35);border-radius:999px;padding:2px 8px}
+.empty{padding:36px 16px;text-align:center;color:var(--ink-2)}
+.empty b{display:block;font-weight:500;color:var(--ink);font-size:16px;margin-bottom:4px}
+.more{display:flex;justify-content:center;padding:12px;border-top:1px solid var(--line)}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:20px}
+.stat{padding:20px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.stat+.stat{border-left:1px solid var(--line)}
+.stat b{font-family:var(--mono);font-weight:400;font-size:clamp(26px,3vw,40px);letter-spacing:-.03em;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat small{font-size:12.5px;color:var(--ink-3)}
+.kinrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:12px 16px}
+.kinrow .ca{flex:1;min-width:0;font-family:var(--mono);font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kinrow .ca.has{color:var(--ink)}
+
+/* section heads */
+.sec{padding:84px 0 0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:22px;flex-wrap:wrap}
+.head h2{margin:0;font-size:clamp(28px,3.2vw,40px);font-weight:600;letter-spacing:-.035em;line-height:1.05}
+.head p{margin:8px 0 0;color:var(--ink-2);max-width:34rem}
+
+/* receipt */
+.rc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.rc-left{display:flex;flex-direction:column;gap:18px}
+.pick{display:flex;flex-wrap:wrap;gap:8px}
+.pick button.chip{height:30px;padding:0 12px 0 4px;font-size:12.5px}
+.pick button.chip .av{width:22px;height:22px}
+.pick button.on{border-color:var(--accent);color:var(--ink)}
+.steps{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.steps div{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 10px;padding:14px 0;border-bottom:1px solid var(--line)}
+.steps .k{font-family:var(--mono);font-size:12px;color:var(--accent);padding-top:2px}
+.steps b{font-weight:500}
+.steps p{grid-column:2;margin:0;font-size:14px;color:var(--ink-2)}
+.receipt{padding:6px 0}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px dashed var(--line-2)}
+.rh b{font-weight:500}
+.rl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;padding:11px 20px;align-items:baseline}
+.rl span{font-size:14px;color:var(--ink-2)}
+.rl em{font-style:normal;font-family:var(--mono);font-size:13.5px;text-align:right;white-space:nowrap}
+.rl small{grid-column:1/-1;font-size:12px;color:var(--ink-3)}
+.rl.sub{padding-top:6px;padding-bottom:6px}
+.rl.sub span{padding-left:16px;position:relative;font-size:13.5px}
+.rl.sub span::before{content:"";position:absolute;left:2px;top:-6px;width:8px;height:14px;border-left:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
+.rl.tot{border-top:1px dashed var(--line-2);margin-top:6px;padding-top:14px}
+.rl.tot span{color:var(--ink);font-weight:500}
+.rl.tot em{color:var(--accent);font-size:15px}
+.rf{padding:12px 20px 10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
+
+/* family */
+.pbar{display:grid;grid-template-columns:auto minmax(0,1fr) repeat(4,minmax(0,auto)) auto;gap:16px 28px;align-items:center;padding:16px 18px}
+.pbar .who{display:flex;align-items:center;gap:12px;min-width:0}
+.pbar .who .av{width:44px;height:44px;font-size:12px}
+.pbar .who b{display:block;font-size:20px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbar .who small{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.pbar dl{margin:0;display:flex;flex-direction:column;gap:3px}
+.pbar dd{margin:0;font-family:var(--mono);font-size:14px;white-space:nowrap}
+.fam{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr);gap:16px;margin-top:16px}
+.big{padding:22px;display:flex;flex-direction:column;gap:18px}
+.big .pct{font-family:var(--mono);font-size:clamp(44px,5.2vw,68px);letter-spacing:-.04em;line-height:1}
+.big .rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.big .rows div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.big .rows em{font-style:normal;font-family:var(--mono);color:var(--ink)}
+.tree{position:relative;padding:8px;min-height:360px}
+.tree svg{display:block;width:100%;height:auto}
+.tree .tt{position:absolute;left:16px;top:14px;right:16px;display:flex;justify-content:space-between;gap:12px;pointer-events:none}
+.ftable{margin-top:16px;overflow:hidden}
+.ftable .grid-head,.ftable .frow{grid-template-columns:minmax(0,2fr) minmax(0,.9fr) minmax(0,1.4fr) minmax(0,1.2fr) minmax(0,.6fr) minmax(0,.6fr)}
+.ext{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.ext:hover{color:var(--accent)}
+
+/* launch */
+.ln-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:16px;align-items:start}
+.form{padding:22px;display:flex;flex-direction:column;gap:16px}
+.form label{display:flex;flex-direction:column;gap:7px;min-width:0}
+.form .lt{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--ink-2)}
+.form .lt small{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.form input[type=text]{height:44px;width:100%;padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel-2);outline:0;font-size:14px}
+.form input.mono{font-family:var(--mono);font-size:13px}
+.form input[type=text]:focus{border-color:var(--accent)}
+.form input::placeholder{color:var(--ink-3)}
+.form .two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px}
+.pfill{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel-2);min-height:58px}
+.pfill .t{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.pfill b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pfill small{font-family:var(--mono);font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.form label.file{flex-direction:row}
+.file{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px dashed var(--line-2);border-radius:var(--r);cursor:pointer;font-size:13.5px;color:var(--ink-2)}
+.file:hover{border-color:var(--accent)}
+.file input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.file .av{width:40px;height:40px}
+.err{margin:0;font-size:13px;color:#FFB3C4}
+.side{display:flex;flex-direction:column;gap:16px}
+.specs{padding:6px 0;margin:0}
+.specs div{display:flex;justify-content:space-between;gap:16px;padding:11px 18px;border-bottom:1px solid var(--line);font-size:14px}
+.specs div:last-child{border-bottom:0}
+.specs dt{color:var(--ink-2)}
+.specs dd{margin:0;font-family:var(--mono);font-size:13px;text-align:right}
+.prev .label{display:block;padding:12px 16px;border-bottom:1px solid var(--line)}
+.prev .frow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"fork mcap" "par prog" "lock age";gap:6px 12px;padding:12px 16px}
+.prev .frow .c-fork{grid-area:fork}.prev .frow .c-par{grid-area:par}.prev .frow .c-mcap{grid-area:mcap}.prev .frow .c-prog{grid-area:prog}.prev .frow .c-lock{grid-area:lock;text-align:left}.prev .frow .c-age{grid-area:age}
+.prev .frow .c-prog .bar{width:90px;flex:none}.prev .frow .c-lock small{display:inline;margin-left:6px}
+.note{margin:0;font-size:13px;color:var(--ink-3)}
+
+/* footer */
+footer{margin-top:110px;border-top:1px solid var(--line)}
+.foot{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:28px;padding:40px 0 28px}
+.foot p{margin:12px 0 0;font-size:13.5px;color:var(--ink-3);max-width:22rem}
+.foot h4{margin:0 0 12px;font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.foot ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:14px;color:var(--ink-2)}
+.foot a:hover{color:var(--ink)}
+.risk{border-top:1px solid var(--line);padding:16px 0 30px;font-size:12.5px;color:var(--ink-3)}
+
+@media (max-width:1000px){
+  .links{display:none}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .fed{display:none}
+  .rc-grid,.fam,.ln-grid{grid-template-columns:minmax(0,1fr)}
+  .pbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+  .pbar .who{grid-column:1/-1}
+  .pbar .acts{grid-column:1/-1}
+  .pbar .sp{display:none}
+  .foot{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .foot>div:first-child{grid-column:1/-1}
+}
+@media (max-width:760px){
+  .hero{padding:26px 0 20px}
+  .hero p{font-size:15.5px;margin-top:10px}
+  .hero .btns{margin-top:16px}
+  .hero .btn{flex:1}
+  .feed-bar{padding:10px}
+  .tabs{width:100%;overflow-x:auto}
+  .tabs button{flex:1;padding:0 8px;font-size:13px}
+  .search{min-width:0;width:100%}
+  .grid-head{display:none}
+  .frow,.ftable .frow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"fork mcap" "par prog" "lock age";gap:6px 12px;padding:12px 14px}
+  .frow .c-fork{grid-area:fork}.frow .c-par{grid-area:par}.frow .c-mcap{grid-area:mcap}.frow .c-prog{grid-area:prog}.frow .c-lock{grid-area:lock;text-align:left}.frow .c-age{grid-area:age}
+  .frow .c-prog .bar{width:70px;flex:none}
+  .frow .c-lock small{display:inline;margin-left:6px}
+  .ftable .frow{grid-template-areas:"fork mcap" "prog prog" "lock age"}
+  .frow .c-ext{display:none}
+  .ftable .frow .c-prog{justify-content:flex-start}
+  .ftable .frow .c-prog .bar{flex:1;max-width:none}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat{padding:16px}
+  .stat:nth-child(3){border-left:0}
+  .stat:nth-child(n+3){border-top:1px solid var(--line)}
+  .sec{padding-top:64px}
+  .form .two{grid-template-columns:minmax(0,1fr)}
+  .tree{min-height:0}
+  .foot{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:420px){
+  .nav{gap:14px}
+  .nav-r .btn{padding:0 12px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap nav">
+    <a class="brand" href="#top" aria-label="KIN home"><svg viewBox="225 252 550 550" fill="none" aria-hidden="true"><path d="M500 585 L306 391 M500 585 L500 310 M500 585 L694 391" stroke="#9FD8FF" stroke-width="34" stroke-linecap="round" fill="none"/><circle cx="306" cy="391" r="52" fill="#EAF3FF"/><circle cx="500" cy="310" r="52" fill="#EAF3FF"/><circle cx="694" cy="391" r="52" fill="#EAF3FF"/><path d="M500 560 L584 670 L500 790 L416 670 Z" fill="#9FD8FF"/></svg>KIN</a>
+    <nav class="links" aria-label="Main"><a href="#explore">Explore</a><a href="#launch">Launch</a><a href="#family">Family trees</a><a href="docs.html" class="docs-link">Docs</a></nav>
+    <div class="nav-r wallet"><button class="btn sm" type="button" id="w-btn">Connect wallet</button><div class="toast" id="w-toast" role="status" hidden></div></div>
+  </div>
+</header>
+
+<main id="top" class="wrap">
+  <section class="hero">
+    <div>
+      <h1>Every fork feeds its parent.</h1>
+      <p>Forks on KIN are paired against the runner they copy. Every buy buys the original, and graduation locks it on Raydium.</p>
+      <div class="btns"><a class="btn pri" href="#launch">Launch a fork</a><a class="btn" href="#explore">Browse forks</a></div>
+    </div>
+    <aside class="card fed" id="fed" aria-label="Most fed parent">
+      <div class="fed-top"><span class="label">Most fed parent</span><span class="dot" id="fed-dot" style="margin-left:auto">Preview</span></div>
+      <div class="fed-top" id="fed-who"></div>
+      <div><div class="fed-num" id="fed-pct">—</div><span class="muted" style="font-size:13px">of supply locked by forks</span></div>
+      <div class="bar"><i id="fed-bar" style="width:0"></i></div>
+    </aside>
+  </section>
+
+  <!-- FEED -->
+  <section id="explore" class="card feed" aria-label="Fork feed">
+    <div class="feed-bar">
+      <div class="tabs" role="tablist" id="tabs">
+        <button type="button" class="on" data-tab="trending">Trending</button><button type="button" data-tab="new">New</button><button type="button" data-tab="graduating">Graduating</button><button type="button" data-tab="graduated">Graduated</button>
+      </div>
+      <form class="search" id="q-form" role="search" novalidate>
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input id="q" type="text" autocomplete="off" spellcheck="false" placeholder="Paste a runner’s CA" aria-label="Paste a runner’s contract address">
+        <button class="btn sm" type="submit">Find forks</button>
+      </form>
+    </div>
+    <div class="feed-note" id="feed-note"><span id="feed-note-t">Preview: example forks of live runners. Real KIN forks replace these at launch.</span><span class="dot" id="feed-dot">Preview</span></div>
+    <div class="feed-note" id="filter" hidden><span class="filter">Forks of <span id="filter-chip"></span></span><button class="x" type="button" id="filter-x">Clear ✕</button></div>
+    <div class="grid-head" aria-hidden="true"><span>Fork</span><span>Forked from</span><span>Mcap</span><span>To graduation</span><span>Parent locked</span><span>Age</span></div>
+    <div id="rows" aria-live="polite"></div>
+    <div class="more" id="more" hidden><button class="btn sm" type="button" id="more-b">Show more</button></div>
+  </section>
+
+  <!-- STATS -->
+  <section class="card stats" aria-label="KIN totals">
+    <div class="stat"><span class="label">Forks launched</span><b id="st-forks">—</b><small id="st-forks-s">&nbsp;</small></div>
+    <div class="stat"><span class="label">Parents fed</span><b id="st-parents">—</b><small id="st-parents-s">&nbsp;</small></div>
+    <div class="stat"><span class="label">Parent tokens locked</span><b id="st-locked">—</b><small id="st-locked-s">value at today’s prices</small></div>
+    <div class="stat"><span class="label">$KIN bought back</span><b id="st-buy">—</b><small id="st-buy-s">&nbsp;</small></div>
+  </section>
+  <div class="card kinrow"><span class="label">$KIN</span><span class="ca" id="kin-ca">CA posted here and on X at launch</span><button class="btn sm" type="button" id="kin-copy" hidden>Copy</button><a class="btn sm pri" id="kin-buy" href="#fees">Buy $KIN</a><span class="dot" id="st-dot">Preview</span></div>
+
+  <!-- RECEIPT -->
+  <section class="sec" id="fees">
+    <div class="rc-grid">
+      <div class="rc-left">
+        <div class="head" style="margin:0"><div><h2>Where a 2 SOL buy goes.</h2><p>You pay in SOL. The curve only takes the parent, so the parent gets bought first.</p></div></div>
+        <div class="pick" id="rc-pick" aria-label="Pick a parent"></div>
+        <div class="steps">
+          <div><span class="k">01</span><b>SOL is swapped to the parent</b><p>Same transaction, routed through Raydium.</p></div>
+          <div><span class="k">02</span><b>The parent goes into the fork’s curve</b><p>Minus the fees below. You get the fork at curve price.</p></div>
+          <div><span class="k">03</span><b>Graduation locks it</b><p>At <span class="grad-sol">85</span> SOL worth of parent, liquidity moves to a CPMM pool and the LP is burned.</p></div>
+        </div>
+      </div>
+      <div class="card receipt" id="receipt" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- FAMILY -->
+  <section class="sec" id="family">
+    <div class="head"><div><h2>Family tree</h2><p>One parent, every fork of it, and how much of its supply they have locked.</p></div><div class="pick" id="fam-pick"></div></div>
+    <div class="card pbar" id="pbar"></div>
+    <div class="fam">
+      <div class="card big">
+        <div><span class="label">Supply locked by forks</span></div>
+        <div><div class="pct" id="fam-pct">—</div><span class="muted" id="fam-pct-s" style="font-size:13.5px">of supply, forever</span></div>
+        <div class="bar"><i id="fam-bar" style="width:0"></i></div>
+        <div class="rows">
+          <div><span>Forks</span><em id="fam-n">—</em></div>
+          <div><span>Graduated</span><em id="fam-g">—</em></div>
+          <div><span>Locked</span><em id="fam-l">—</em></div>
+          <div><span>In curves now</span><em id="fam-c">—</em></div>
+          <div><span>Next graduation locks</span><em id="fam-one">—</em></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm pri" href="#launch" id="fam-fork">Fork it</a><button class="btn sm" type="button" id="fam-link">Copy link</button></div>
+      </div>
+      <div class="card tree"><div class="tt"><span class="label" id="tree-t">—</span><span class="dot" id="tree-dot">Preview</span></div><svg id="tree" viewBox="0 0 800 440" role="img" aria-label="Family tree"></svg></div>
+    </div>
+    <div class="card ftable">
+      <div class="grid-head" aria-hidden="true"><span>Fork</span><span>Mcap</span><span>To graduation</span><span>Parent locked</span><span>Age</span><span></span></div>
+      <div id="frows"></div>
+    </div>
+  </section>
+
+  <!-- LAUNCH -->
+  <section class="sec" id="launch">
+    <div class="head"><div><h2>Launch a fork</h2><p>Paste the parent, name the fork. You see exactly what it locks before you sign.</p></div></div>
+    <div class="ln-grid">
+      <form class="card form" id="f" novalidate>
+        <label><span class="lt">Parent CA <small>the runner you are forking</small></span><input type="text" class="mono" id="f-parent" autocomplete="off" spellcheck="false" placeholder="Paste a runner’s CA"></label>
+        <div class="pfill" id="f-pinfo"></div>
+        <div class="two">
+          <label><span class="lt">Name</span><input type="text" id="f-name" maxlength="32" autocomplete="off" placeholder="Fartcoin Two"></label>
+          <label><span class="lt">Ticker</span><input type="text" class="mono" id="f-tick" maxlength="10" autocomplete="off" placeholder="FART2"></label>
+        </div>
+        <label class="file"><span class="av" id="f-thumb">IMG</span><span id="f-file-t">Image · PNG, JPG or GIF, max 4 MB</span><input type="file" id="f-file" accept="image/png,image/jpeg,image/gif,image/webp"></label>
+        <label><span class="lt">Description <small>optional</small></span><input type="text" id="f-desc" maxlength="140" autocomplete="off" placeholder="One line about the fork"></label>
+        <p class="err" id="f-err" hidden></p>
+        <button class="btn pri" type="submit" id="f-go">Connect wallet to launch</button>
+        <p class="note" id="f-note">Launches open with $KIN. Parent data and the numbers on the right are live.</p>
+      </form>
+      <div class="side">
+        <dl class="card specs" id="specs"></dl>
+        <div class="card prev"><span class="label">How it shows up in Explore</span><div id="f-row"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div><a class="brand" href="#top"><svg viewBox="225 252 550 550" fill="none" aria-hidden="true"><path d="M500 585 L306 391 M500 585 L500 310 M500 585 L694 391" stroke="#9FD8FF" stroke-width="34" stroke-linecap="round" fill="none"/><circle cx="306" cy="391" r="52" fill="#EAF3FF"/><circle cx="500" cy="310" r="52" fill="#EAF3FF"/><circle cx="694" cy="391" r="52" fill="#EAF3FF"/><path d="M500 560 L584 670 L500 790 L416 670 Z" fill="#9FD8FF"/></svg>KIN</a><p>A Raydium LaunchLab launchpad where every fork is paired against its parent.</p></div>
+      <div><h4>Product</h4><ul><li><a href="#explore">Explore</a></li><li><a href="#launch">Launch a fork</a></li><li><a href="#family">Family trees</a></li><li><a href="#fees" class="buy-l">Buy $KIN</a></li></ul></div>
+      <div><h4>Learn</h4><ul><li><a href="docs.html" class="docs-link">Docs</a></li><li><a href="docs.html#pairing" class="docs-link">How pairing works</a></li><li><a href="docs.html#fees" class="docs-link">Fees</a></li><li><a href="docs.html#faq" class="docs-link">FAQ</a></li></ul></div>
+      <div><h4>Legal</h4><ul><li><a href="docs.html#risks" class="docs-link">Risks</a></li><li><a href="docs.html#disclaimer" class="docs-link">Disclaimer</a></li><li id="x-li" hidden><a id="x-l" href="#" target="_blank" rel="noopener">X</a></li></ul></div>
+    </div>
+    <div class="risk">Memecoins can go to zero. A fork is not its parent and moves with the parent’s price. Locked liquidity does not protect a price. Nothing here is financial advice.</div>
+  </div>
+</footer>
+
+<script>
+/* ===== Edit at launch ===== */
+const CONFIG = {
+  ca: "",              // $KIN mint
+  buy: "",             // optional buy link. Empty = Raydium LaunchLab page for the CA
+  x: "",               // X profile link
+  site: "",            // e.g. "kinpad.fun"
+  platformId: "",      // KIN's LaunchLab platform config. Turns the feed, numbers and trees live
+  buybackWallet: "",   // wallet that receives bought-back $KIN. Powers "$KIN bought back"
+  launchUrl: "",       // when fork launches are wired up: the launcher. Turns on the Launch button
+  docs: "docs.html",
+  rpc: "https://api.mainnet-beta.solana.com",
+  gradSol: 85,         // graduation target per fork, in SOL value at launch
+  platformFeePct: 1.74,
+  protocolFeePct: 0.25,// Raydium LaunchLab trading fee
+  fees: [ { label: "Buys back $KIN", pct: 40 }, { label: "Burns the parent", pct: 30 }, { label: "Treasury", pct: 30 } ]
+};
+
+/* ===== Basics ===== */
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const isAddr = s => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s);
+const short = s => s && s.length > 12 ? s.slice(0, 4) + "…" + s.slice(-4) : (s || "");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clean = s => String(s || "").trim().replace(/^\$/, "");
+const tk = s => "$" + (clean(s) || "PARENT").toUpperCase();
+const WSOL = "So11111111111111111111111111111111111111112";
+const RAY = "https://launch-mint-v1.raydium.io";
+const LIVE = !!CONFIG.platformId;
+const KIN = CONFIG.ca && isAddr(CONFIG.ca) ? CONFIG.ca : null;
+const FEE_TOTAL = CONFIG.fees.reduce((a, f) => a + f.pct, 0) || 100;
+const T0 = Date.now();
+
+function num(v, d = 2){
+  if (v == null || !isFinite(v)) return "—";
+  const a = Math.abs(v);
+  if (a >= 1e12) return (v / 1e12).toFixed(2) + "T";
+  if (a >= 1e9) return (v / 1e9).toFixed(2) + "B";
+  if (a >= 1e6) return (v / 1e6).toFixed(2) + "M";
+  if (a >= 1e5) return (v / 1e3).toFixed(0) + "K";
+  if (a >= 1e4) return (v / 1e3).toFixed(1) + "K";
+  if (a >= 100) return Math.round(v).toLocaleString("en-US");
+  if (a >= 1) return v.toFixed(d);
+  if (a === 0) return "0";
+  return Number(v.toPrecision(3)).toString();
+}
+const usd = v => v == null || !isFinite(v) ? "—" : "$" + num(v);
+function price(v){
+  if (v == null || !isFinite(v) || v <= 0) return "—";
+  if (v >= 1) return "$" + v.toFixed(v >= 100 ? 0 : 3);
+  return "$" + v.toFixed(Math.min(12, Math.max(2, -Math.floor(Math.log10(v)) + 2)));
+}
+function pct(v){
+  if (v == null || !isFinite(v)) return "—";
+  if (v === 0) return "0%";
+  if (v >= 10) return v.toFixed(1) + "%";
+  if (v >= 1) return v.toFixed(2) + "%";
+  if (v >= .01) return v.toFixed(3) + "%";
+  return Number(v.toPrecision(2)) + "%";
+}
+function age(ms){
+  const s = Math.max(1, Math.round((Date.now() - ms) / 1000));
+  if (s < 60) return s + "s"; const m = Math.round(s / 60); if (m < 60) return m + "m";
+  const h = Math.round(m / 60); if (h < 48) return h + "h"; return Math.round(h / 24) + "d";
+}
+function av(img, sym, cls = ""){
+  const ini = esc(clean(sym).slice(0, 3).toUpperCase() || "?");
+  return `<span class="av ${cls}">${ini}${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</span>`;
+}
+
+/* ===== Network ===== */
+async function getJSON(url, opt = {}, ms = 9000){
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, Object.assign({ signal: c.signal }, opt)); if (!r.ok) throw new Error("HTTP " + r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+async function fetchVia(url){
+  try { return await getJSON(url); }
+  catch (e){ if (/^https?:$/.test(location.protocol)) return await getJSON("/api/proxy?u=" + encodeURIComponent(url)); throw e; }
+}
+
+/* Snapshot prices, used only when live prices can't be fetched. Shown with a label. */
+const SNAP_DATE = "10 Nov 2026";
+const SNAP_SOL = 86.6;
+const SNAP = {
+  "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump": { name: "Fartcoin", sym: "FARTCOIN", priceUsd: .1192, fdv: 119249050, liq: 6228163, ch24: 3.4 },
+  "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263": { name: "Bonk", sym: "BONK", priceUsd: .00000277, fdv: 246222152, liq: 275863, ch24: -.9 },
+  "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm": { name: "dogwifhat", sym: "WIF", priceUsd: .1576, fdv: 157503958, liq: 121528, ch24: 1.2 },
+  "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr": { name: "Popcat", sym: "POPCAT", priceUsd: .03448, fdv: 33792982, liq: 2831590, ch24: -2.1 }
+};
+const RUNNERS = Object.keys(SNAP);
+let solUsd = null, priceMode = "loading";
+const P = new Map();   // parent mint -> info
+function snapInfo(m){ const s = SNAP[m]; return s ? Object.assign({ mint: m, img: null, mcap: s.fdv, supply: s.fdv / s.priceUsd, snap: true }, s) : null; }
+async function loadPrices(mints){
+  const want = [...new Set(mints.filter(m => m && isAddr(m)))];
+  const need = want.filter(m => !P.has(m) || P.get(m).snap || Date.now() - P.get(m).at > 60000);
+  try {
+    for (let i = 0; i < need.length; i += 30){
+      const chunk = need.slice(i, i + 30);
+      const j = await fetchVia(`https://api.dexscreener.com/tokens/v1/solana/${chunk.join(",")}`);
+      const best = new Map();
+      (Array.isArray(j) ? j : []).forEach(pr => {
+        const liq = (pr.liquidity && pr.liquidity.usd) || 0;
+        if (pr.quoteToken && pr.quoteToken.address === WSOL && +pr.priceNative > 0 && +pr.priceUsd > 0 && liq > 25000) solUsd = +pr.priceUsd / +pr.priceNative;
+        const m = pr.baseToken && pr.baseToken.address; if (!m || !chunk.includes(m)) return;
+        const cur = best.get(m);
+        if (!cur || liq > cur.liq){ const p = +pr.priceUsd || null, fdv = pr.fdv || null; best.set(m, { mint: m, name: String(pr.baseToken.name || "").trim(), sym: clean(pr.baseToken.symbol), img: pr.info && pr.info.imageUrl, priceUsd: p, fdv, mcap: pr.marketCap || fdv, liq, ch24: pr.priceChange ? pr.priceChange.h24 : null, supply: fdv && p ? fdv / p : null, at: Date.now() }); }
+      });
+      chunk.forEach(m => { if (best.get(m)) P.set(m, best.get(m)); else if (!P.has(m)) P.set(m, Object.assign(snapInfo(m) || { mint: m, missing: true }, { at: Date.now() })); });
+    }
+    if (!solUsd){ const j = await fetchVia(`https://api.dexscreener.com/tokens/v1/solana/${WSOL}`); let b = 0; (Array.isArray(j) ? j : []).forEach(pr => { const l = (pr.liquidity && pr.liquidity.usd) || 0; if (pr.baseToken.address === WSOL && /USD/.test(pr.quoteToken.symbol) && l > b){ b = l; solUsd = +pr.priceUsd; } }); }
+    priceMode = "live";
+  } catch (e){
+    need.forEach(m => { if (!P.has(m)){ const s = snapInfo(m); if (s) P.set(m, Object.assign(s, { at: Date.now() })); } });
+    if (!solUsd){ solUsd = SNAP_SOL; priceMode = "snap"; }
+  }
+  if (!solUsd){ solUsd = SNAP_SOL; priceMode = "snap"; }
+}
+const info = m => { const i = P.get(m); return i && !i.missing ? i : null; };
+const gradTokens = m => { const i = info(m); return i && i.priceUsd && solUsd ? CONFIG.gradSol * solUsd / i.priceUsd : null; };
+
+/* ===== Forks: live from Raydium, or labelled examples ===== */
+let forks = [], forkMode = LIVE ? "loading" : "preview", trendIds = null;
+function normFork(r){
+  const decB = r.mintB && r.mintB.decimals != null ? r.mintB.decimals : 6;
+  const fund = Number(r.totalFundRaisingB || 0) / Math.pow(10, decB), rate = clamp(Number(r.finishingRate || 0), 0, 100);
+  return { mint: r.mint, name: r.name || r.symbol, sym: clean(r.symbol), img: r.imgUrl, parent: (r.configInfo && r.configInfo.mintB) || (r.mintB && r.mintB.address), parentSym: r.mintB && clean(r.mintB.symbol), parentImg: r.mintB && r.mintB.logoURI, rate, grad: rate >= 100, fund, inCurve: fund * rate / 100, locked: rate >= 100 ? fund : 0, mcap: Number(r.marketCap) || null, vol: Number(r.volumeU) || 0, at: Number(r.createAt) || Date.now() };
+}
+async function loadLive(){
+  let rows = [], next = "";
+  for (let i = 0; i < 8; i++){
+    const j = await fetchVia(`${RAY}/get/list?platformId=${CONFIG.platformId}&sort=new&size=100&mintType=default&includeNsfw=true${next ? "&nextPageId=" + next : ""}`);
+    const d = j && j.data; if (!d || !d.rows) break;
+    rows = rows.concat(d.rows); if (!d.nextPageId || d.rows.length < 100) break; next = d.nextPageId;
+  }
+  const out = rows.map(normFork).filter(f => f.parent && f.parent !== WSOL && f.mint !== KIN);
+  try { const t = await fetchVia(`${RAY}/get/list?platformId=${CONFIG.platformId}&sort=hotToken&size=50&mintType=default&includeNsfw=true`); trendIds = ((t && t.data && t.data.rows) || []).map(r => r.mint); } catch (e){ trendIds = null; }
+  return out;
+}
+const EXAMPLES = [
+  ["Fartcoin Two", "FART2", 0, 100, 412000, 190],
+  ["Baby Bonk", "BABYBONK", 1, 100, 268000, 310],
+  ["Popcat Classic", "POP2", 3, 100, 191000, 540],
+  ["Fart CTO", "FARTCTO", 0, 86, 61800, 41],
+  ["Wif Hat Two", "WIF2", 2, 72, 52400, 66],
+  ["Bonk Inu", "BONKINU", 1, 58, 44100, 23],
+  ["Super Popcat", "SPOP", 3, 34, 31900, 12],
+  ["Mini Fart", "MFART", 0, 21, 24600, 6],
+  ["Wif Jr", "WIFJR", 2, 9, 16300, 3],
+  ["Bonk Two", "BONK2", 1, 3, 11800, 1]
+];
+function previewForks(){
+  return EXAMPLES.map(([name, sym, pi, rate, mcap, mins], k) => {
+    const parent = RUNNERS[pi], g = gradTokens(parent);
+    return { mint: null, sample: true, name, sym, img: null, parent, rate, grad: rate >= 100, fund: g, inCurve: g != null ? g * rate / 100 : null, locked: rate >= 100 ? g : 0, mcap, vol: mcap * (1.4 - k * .08), at: T0 - mins * 60000 - k * 7000 };
+  });
+}
+
+/* ===== Aggregates ===== */
+function groupOf(m){
+  const fs = forks.filter(f => f.parent === m), i = info(m);
+  const locked = fs.reduce((a, f) => a + (f.locked || 0), 0), curve = fs.reduce((a, f) => a + (f.grad ? 0 : (f.inCurve || 0)), 0);
+  return { mint: m, forks: fs, n: fs.length, g: fs.filter(f => f.grad).length, locked, curve, pct: i && i.supply ? locked / i.supply * 100 : 0, lockedUsd: i && i.priceUsd ? locked * i.priceUsd : 0, curveUsd: i && i.priceUsd ? curve * i.priceUsd : 0 };
+}
+const parentsInFeed = () => [...new Set(forks.map(f => f.parent))];
+
+/* ===== State ===== */
+let tab = "trending", filterMint = null, showN = 10, sel = RUNNERS[0], rcSel = RUNNERS[0];
+
+/* ===== Feed ===== */
+function parentChip(m, fallbackSym, img){
+  const i = info(m), sym = i ? i.sym : fallbackSym || short(m);
+  return `<button type="button" class="chip" data-parent="${esc(m)}" title="See the family tree of ${esc(tk(sym))}">${av((i && i.img) || img, sym)}forked from ${esc(tk(sym))}</button>`;
+}
+function progCell(f){
+  return f.grad ? `<div class="c-prog n"><span class="grad">Graduated</span></div>` : `<div class="c-prog"><div class="bar"><i style="width:${Math.max(f.rate, 1.5).toFixed(1)}%"></i></div><span class="pc">${f.rate < 10 ? f.rate.toFixed(1) : Math.round(f.rate)}%</span></div>`;
+}
+function lockCell(f){
+  const i = info(f.parent), sym = i ? i.sym : f.parentSym;
+  if (f.grad) return `<div class="n c-lock">${num(f.locked)} ${esc(clean(sym).toUpperCase())}${i && i.supply ? `<small>${pct(f.locked / i.supply * 100)} of supply</small>` : ""}</div>`;
+  return `<div class="n c-lock muted">${f.inCurve != null ? num(f.inCurve) + " in curve" : "—"}<small>locks at graduation</small></div>`;
+}
+function rowHTML(f, opts = {}){
+  const act = opts.static ? "" : f.mint ? `tabindex="0" data-href="https://raydium.io/launchpad/token/?mint=${esc(f.mint)}"` : `tabindex="0" data-row-parent="${esc(f.parent)}"`;
+  const parentCol = opts.family ? "" : `<div class="c-par">${parentChip(f.parent, f.parentSym, f.parentImg)}</div>`;
+  const tail = opts.family ? `<div class="n c-age muted">${age(f.at)}</div><div class="n c-ext">${f.mint ? `<span class="ext">Raydium ↗</span>` : `<span class="ext">Example</span>`}</div>` : `<div class="n c-age muted">${age(f.at)}</div>`;
+  return `<div class="frow${act ? " act" : ""}" ${act}><div class="c-fork">${av(f.img, f.sym)}<div class="nm"><b>${esc(f.name)}</b><small>$${esc(f.sym.toUpperCase())}</small></div></div>${parentCol}<div class="n c-mcap">${f.mcap ? usd(f.mcap) : "—"}</div>${progCell(f)}${lockCell(f)}${tail}</div>`;
+}
+function sorted(){
+  let list = forks.slice();
+  if (filterMint) list = list.filter(f => f.parent === filterMint);
+  if (tab === "new") list.sort((a, b) => b.at - a.at);
+  else if (tab === "graduating") list = list.filter(f => !f.grad).sort((a, b) => b.rate - a.rate);
+  else if (tab === "graduated") list = list.filter(f => f.grad).sort((a, b) => (b.mcap || 0) - (a.mcap || 0));
+  else if (trendIds && forkMode === "live"){ const r = new Map(trendIds.map((m, i) => [m, i])); list.sort((a, b) => (r.has(a.mint) ? r.get(a.mint) : 1e6) - (r.has(b.mint) ? r.get(b.mint) : 1e6) || b.vol - a.vol); }
+  else list.sort((a, b) => b.vol - a.vol);
+  return list;
+}
+function renderFeed(){
+  const list = sorted(), rows = $("rows");
+  if (forkMode === "loading"){ rows.innerHTML = `<div class="empty">Loading forks from Raydium…</div>`; $("more").hidden = true; return; }
+  if (!list.length){
+    const i = filterMint && info(filterMint);
+    rows.innerHTML = forkMode === "error" ? `<div class="empty"><b>Can’t reach Raydium right now</b>Retrying every 30 seconds.</div>`
+      : filterMint ? `<div class="empty"><b>No forks of ${esc(tk(i ? i.sym : short(filterMint)))} yet</b>Be the first. <a href="#launch" style="color:var(--accent)">Launch a fork →</a></div>`
+      : `<div class="empty"><b>${tab === "graduated" ? "Nothing has graduated yet" : tab === "graduating" ? "No curves filling right now" : "No forks yet"}</b><a href="#launch" style="color:var(--accent)">Launch the first fork →</a></div>`;
+    $("more").hidden = true; return;
+  }
+  rows.innerHTML = list.slice(0, showN).map(f => rowHTML(f)).join("");
+  $("more").hidden = list.length <= showN;
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (!b) return; tab = b.dataset.tab; showN = 10; document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b)); renderFeed(); });
+$("more-b").addEventListener("click", () => { showN += 20; renderFeed(); });
+function rowAct(e){
+  const c = e.target.closest("[data-parent]");
+  if (c){ e.preventDefault(); selectParent(c.dataset.parent, { scroll: true }); return; }
+  const r = e.target.closest(".frow.act"); if (!r) return;
+  if (r.dataset.href){ const a = document.createElement("a"); a.href = r.dataset.href; a.target = "_blank"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove(); }
+  else if (r.dataset.rowParent) selectParent(r.dataset.rowParent, { scroll: true });
+}
+document.addEventListener("click", rowAct);
+document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".frow.act")){ e.preventDefault(); rowAct({ target: e.target, preventDefault(){} }); } });
+$("q-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const v = $("q").value.trim();
+  if (!isAddr(v)){ $("q").value = ""; $("q").placeholder = "That isn’t a Solana CA. Paste the full address."; return; }
+  await loadPrices([v]);
+  filterMint = v; showN = 10;
+  renderFilter(); renderFeed(); selectParent(v, { quiet: true });
+});
+$("q").addEventListener("paste", () => setTimeout(() => { if (isAddr($("q").value.trim())) $("q-form").requestSubmit(); }, 0));
+$("filter-x").addEventListener("click", () => { filterMint = null; $("q").value = ""; renderFilter(); renderFeed(); });
+function renderFilter(){
+  $("filter").hidden = !filterMint;
+  if (filterMint){ const i = info(filterMint); $("filter-chip").innerHTML = `<span class="chip">${av(i && i.img, i ? i.sym : "?")}${esc(tk(i ? i.sym : short(filterMint)))}</span>`; }
+}
+
+/* ===== Stats + hero card ===== */
+let boughtBack = null;
+async function loadBuyback(){
+  if (!CONFIG.buybackWallet || !KIN) return;
+  try {
+    const j = await getJSON(CONFIG.rpc, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getTokenAccountsByOwner", params: [CONFIG.buybackWallet, { mint: KIN }, { encoding: "jsonParsed" }] }) });
+    boughtBack = ((j.result && j.result.value) || []).reduce((a, x) => a + (x.account.data.parsed.info.tokenAmount.uiAmount || 0), 0);
+  } catch (e){ boughtBack = null; }
+}
+function renderStats(){
+  const ps = parentsInFeed(), gs = ps.map(groupOf);
+  const lockedUsd = gs.reduce((a, g) => a + g.lockedUsd, 0), curveUsd = gs.reduce((a, g) => a + g.curveUsd, 0);
+  const grads = forks.filter(f => f.grad).length;
+  $("st-forks").textContent = forkMode === "loading" ? "—" : forks.length.toLocaleString("en-US");
+  $("st-forks-s").textContent = forkMode === "loading" ? " " : `${grads} graduated`;
+  $("st-parents").textContent = forkMode === "loading" ? "—" : ps.length.toLocaleString("en-US");
+  $("st-parents-s").textContent = ps.length ? `most fed: ${tk((info(topParent().mint) || {}).sym)}` : " ";
+  $("st-locked").textContent = forkMode === "loading" ? "—" : usd(lockedUsd);
+  $("st-locked-s").textContent = `+ ${usd(curveUsd)} in curves now`;
+  if (forkMode === "preview"){ $("st-buy").textContent = "$1,180"; $("st-buy-s").textContent = "example: 40% of fees on the forks above"; }
+  else if (boughtBack != null){ $("st-buy").textContent = num(boughtBack) + " $KIN"; $("st-buy-s").textContent = "held in the buyback wallet"; }
+  else { $("st-buy").textContent = "0"; $("st-buy-s").textContent = "starts with the first fees"; }
+  const d = $("st-dot"), fd = $("feed-dot");
+  [d, fd, $("fed-dot"), $("tree-dot")].forEach(el => { el.className = "dot" + (forkMode === "live" ? " live" : forkMode === "error" ? " off" : ""); el.textContent = forkMode === "live" ? "Live" : forkMode === "error" ? "Offline" : "Preview"; });
+  $("feed-note").hidden = forkMode === "live";
+  $("feed-note-t").textContent = forkMode === "error" ? "Can’t reach Raydium right now. Retrying every 30 seconds." : forkMode === "loading" ? "Loading forks from Raydium…" : `Preview: example forks of live runners${priceMode === "snap" ? `, priced with a ${SNAP_DATE} snapshot` : ""}. Real KIN forks replace these at launch.`;
+  // hero card
+  const t = topParent(), i = info(t.mint);
+  $("fed-who").innerHTML = t.n ? `${av(i && i.img, i ? i.sym : "?")}<b>${esc(i ? i.name : short(t.mint))}</b><span class="mono muted" style="font-size:12px">${esc(tk(i ? i.sym : ""))}</span>` : `<span class="muted">No forks yet</span>`;
+  $("fed-pct").textContent = t.n ? pct(t.pct) : "0%";
+  $("fed-bar").style.width = t.n ? clamp(Math.sqrt(t.pct / 100) * 100 * 3, 2, 100).toFixed(1) + "%" : "0";
+}
+function topParent(){ const gs = parentsInFeed().map(groupOf).sort((a, b) => (b.pct - a.pct) || (b.n - a.n)); return gs[0] || { mint: RUNNERS[0], n: 0, pct: 0 }; }
+
+/* ===== Receipt ===== */
+function renderPick(id, cur, list){
+  $(id).innerHTML = list.map(m => { const i = info(m); return `<button type="button" class="chip${m === cur ? " on" : ""}" data-pick="${esc(m)}">${av(i && i.img, i ? i.sym : "?")}${esc(tk(i ? i.sym : short(m)))}</button>`; }).join("");
+}
+function renderReceipt(){
+  const m = rcSel, i = info(m), T = tk(i ? i.sym : ""), S = clean(i ? i.sym : "").toUpperCase();
+  renderPick("rc-pick", m, pickList());
+  const box = $("receipt");
+  if (!i || !i.priceUsd || !solUsd){ box.innerHTML = `<div class="rh"><b>2 SOL buy of a fork of ${esc(T)}</b></div><div class="rl"><span>Waiting for a price for ${esc(T)}…</span><em>—</em></div>`; return; }
+  const sol = 2, usdIn = sol * solUsd, got = usdIn / i.priceUsd;
+  const prot = got * CONFIG.protocolFeePct / 100, plat = got * CONFIG.platformFeePct / 100, curve = got - prot - plat;
+  const g = gradTokens(m);
+  const fees = CONFIG.fees.map(f => `<div class="rl sub"><span>${esc(f.label.replace("the parent", T))} · ${Math.round(f.pct / FEE_TOTAL * 100)}%</span><em>${num(plat * f.pct / FEE_TOTAL)} ${esc(S)}</em></div>`).join("");
+  box.innerHTML = `<div class="rh"><b>2 SOL buy of a fork of ${esc(T)}</b><span class="dot${priceMode === "live" ? " live" : ""}">${priceMode === "live" ? "Live prices" : "Snapshot " + SNAP_DATE}</span></div>
+    <div class="rl"><span>You pay</span><em>${sol.toFixed(3)} SOL</em><small>${usd(usdIn)} at ${usd(solUsd)} per SOL</small></div>
+    <div class="rl"><span>Swapped to ${esc(T)}</span><em>${num(got)} ${esc(S)}</em><small>at ${price(i.priceUsd)} · bought on the open market</small></div>
+    <div class="rl"><span>Raydium trading fee · ${CONFIG.protocolFeePct}%</span><em>−${num(prot)} ${esc(S)}</em></div>
+    <div class="rl"><span>KIN fee · ${CONFIG.platformFeePct}%</span><em>−${num(plat)} ${esc(S)}</em></div>
+    ${fees}
+    <div class="rl tot"><span>Into the fork’s curve</span><em>${num(curve)} ${esc(S)}</em><small>${g ? `${pct(curve / g * 100)} of the ${num(g)} ${esc(S)} graduation target. Locked forever once it graduates.` : "Locked forever once it graduates."}</small></div>
+    <div class="rf"><span>Swap price impact and slippage not included.</span><span>${i.supply ? `Graduation locks ${pct(g / i.supply * 100)} of ${esc(T)} supply` : ""}</span></div>`;
+}
+function pickList(){ const ps = parentsInFeed().sort((a, b) => groupOf(b).n - groupOf(a).n); const l = (ps.length ? ps : RUNNERS).slice(0, 5); if (sel && !l.includes(sel)) l.push(sel); return l; }
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-pick]"); if (!b) return;
+  if (b.closest("#rc-pick")){ rcSel = b.dataset.pick; renderReceipt(); }
+  else selectParent(b.dataset.pick, {});
+});
+
+/* ===== Family ===== */
+async function selectParent(m, opts = {}){
+  if (!isAddr(m)) return;
+  sel = m; rcSel = m;
+  if (!info(m)) await loadPrices([m]);
+  renderFamily(); renderReceipt(); setFormParent(m);
+  try { history.replaceState(null, "", "#p-" + m); } catch (e){}
+  if (opts.scroll) $("family").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+function renderFamily(){
+  const m = sel, i = info(m), g = groupOf(m), T = tk(i ? i.sym : short(m)), S = clean(i ? i.sym : "").toUpperCase();
+  renderPick("fam-pick", m, pickList());
+  const ch = i && i.ch24 != null ? +i.ch24 : null;
+  $("pbar").innerHTML = `<div class="who">${av(i && i.img, i ? i.sym : "?")}<div style="min-width:0"><b>${esc(i ? i.name : "Unknown coin")}</b><small>${esc(T)} · ${esc(short(m))}</small></div></div><span class="sp"></span>
+    <dl><dt class="label">Price</dt><dd>${i ? price(i.priceUsd) : "—"}</dd></dl>
+    <dl><dt class="label">Mcap</dt><dd>${i ? usd(i.mcap) : "—"}</dd></dl>
+    <dl><dt class="label">Liquidity</dt><dd>${i ? usd(i.liq) : "—"}</dd></dl>
+    <dl><dt class="label">24h</dt><dd class="${ch == null ? "" : ch >= 0 ? "up" : "down"}">${ch == null ? "—" : (ch > 0 ? "+" : "") + ch.toFixed(1) + "%"}</dd></dl>
+    <div class="acts"><a class="btn sm" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">Chart ↗</a></div>`;
+  $("fam-pct").textContent = pct(g.pct);
+  $("fam-bar").style.width = g.pct ? clamp(Math.sqrt(g.pct / 100) * 300, 2, 100).toFixed(1) + "%" : "0";
+  $("fam-n").textContent = g.n; $("fam-g").textContent = g.g;
+  $("fam-l").textContent = g.locked ? `${num(g.locked)} ${S}` : "0";
+  $("fam-c").textContent = g.curve ? `${num(g.curve)} ${S}` : "0";
+  const one = gradTokens(m);
+  $("fam-one").textContent = one ? `${num(one)} ${S}` + (i && i.supply ? ` · ${pct(one / i.supply * 100)}` : "") : "—";
+  $("fam-fork").textContent = `Fork ${T}`;
+  $("tree-t").textContent = `${T} · ${g.n} fork${g.n === 1 ? "" : "s"}`;
+  drawTree(g, i, T);
+  const list = g.forks.slice().sort((a, b) => (b.grad - a.grad) || (b.rate - a.rate));
+  $("frows").innerHTML = list.length ? list.map(f => rowHTML(f, { family: true })).join("") : `<div class="empty"><b>No forks of ${esc(T)} yet</b>The first fork grows the first branch. <a href="#launch" style="color:var(--accent)">Launch it →</a></div>`;
+}
+function drawTree(g, i, T){
+  const W = 800, H = 440, cx = 400, cy = 236, rx = 290, ry = 148;
+  const fs = g.forks.slice().sort((a, b) => b.rate - a.rate).slice(0, 12), n = fs.length;
+  let s = `<defs><clipPath id="cp"><circle r="17"/></clipPath><clipPath id="cpp"><circle r="27"/></clipPath></defs>`;
+  [.5, 1].forEach(k => s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx * k}" ry="${ry * k}" fill="none" stroke="#16294A" stroke-dasharray="2 5"/>`);
+  fs.forEach((f, k) => {
+    const a = -Math.PI / 2 + (n % 2 ? k : k + .5) / n * Math.PI * 2;
+    const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry, sx = cx + Math.cos(a) * 34, sy = cy + Math.sin(a) * 34;
+    s += `<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#9FD8FF" stroke-opacity="${f.grad ? .85 : .4}" stroke-width="${f.grad ? 1.4 : 1}"${f.grad ? "" : ' stroke-dasharray="4 4"'}/>`;
+  });
+  fs.forEach((f, k) => {
+    const a = -Math.PI / 2 + (n % 2 ? k : k + .5) / n * Math.PI * 2;
+    const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry, below = Math.sin(a) > -.2;
+    s += `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="18" fill="#0D1626" stroke="${f.grad ? "#9FD8FF" : "#1F3A62"}"/>`
+      + `<text text-anchor="middle" dy="3.5" font-family="Geist Mono, monospace" font-size="9" fill="#9FD8FF">${esc(f.sym.slice(0, 3).toUpperCase())}</text>`
+      + (f.img ? `<image href="${esc(f.img)}" x="-17" y="-17" width="34" height="34" clip-path="url(#cp)" preserveAspectRatio="xMidYMid slice"/>` : "")
+      + `<text text-anchor="middle" y="${below ? 33 : -26}" font-family="Geist Mono, monospace" font-size="11.5" fill="#EAF3FF">$${esc(f.sym.toUpperCase().slice(0, 10))}</text>`
+      + `<text text-anchor="middle" y="${below ? 47 : -40}" font-family="Geist Mono, monospace" font-size="10" fill="${f.grad ? "#9FD8FF" : "#7F93B3"}">${f.grad ? "graduated" : Math.round(f.rate) + "%"}</text></g>`;
+  });
+  s += `<g transform="translate(${cx},${cy})"><circle r="28" fill="#0D1626" stroke="#9FD8FF" stroke-width="1.4"/><text text-anchor="middle" dy="4" font-family="Geist Mono, monospace" font-size="11" fill="#9FD8FF">${esc(clean(i ? i.sym : "?").slice(0, 4).toUpperCase())}</text>`
+    + (i && i.img ? `<image href="${esc(i.img)}" x="-27" y="-27" width="54" height="54" clip-path="url(#cpp)" preserveAspectRatio="xMidYMid slice"/>` : "")
+    + `<text text-anchor="middle" y="${n ? 48 : 50}" font-family="Geist, sans-serif" font-size="13" font-weight="500" fill="#EAF3FF">${esc(T)}</text></g>`;
+  if (!n) s += `<text x="${cx}" y="${cy + 92}" text-anchor="middle" font-family="Geist, sans-serif" font-size="13" fill="#7F93B3">No forks yet</text>`;
+  $("tree").innerHTML = s;
+}
+$("fam-link").addEventListener("click", e => {
+  const url = location.href.split("#")[0] + "#p-" + sel;
+  copyText(url, e.currentTarget);
+});
+
+/* ===== Launch form ===== */
+let formImg = null, fParent = null;
+function setFormParent(m){ if (document.activeElement !== $("f-parent")) $("f-parent").value = m; fParent = m; renderForm(); }
+function renderForm(){
+  const m = fParent, i = m && info(m), T = tk(i ? i.sym : ""), S = clean(i ? i.sym : "").toUpperCase();
+  $("f-pinfo").innerHTML = i ? `${av(i.img, i.sym)}<div class="t"><b>${esc(i.name)} · ${esc(T)}</b><small>${price(i.priceUsd)} · mcap ${usd(i.mcap)} · liq ${usd(i.liq)}</small></div><span class="dot${priceMode === "live" ? " live" : ""}" style="margin-left:auto">${priceMode === "live" ? "Live" : "Snapshot"}</span>`
+    : `<span class="av">?</span><div class="t"><b class="muted">Parent info fills in here</b><small>Paste a CA above</small></div>`;
+  const g = m && gradTokens(m);
+  $("specs").innerHTML = `<div><dt>Quote token</dt><dd>${i ? esc(T) + " (not SOL)" : "—"}</dd></div>
+    <div><dt>Graduates at</dt><dd>${g ? `${num(g)} ${esc(S)}` : "—"}<br><span class="muted">${CONFIG.gradSol} SOL worth, fixed at launch</span></dd></div>
+    <div><dt>Locks forever</dt><dd>${g && i.supply ? pct(g / i.supply * 100) + " of " + esc(T) : "—"}</dd></div>
+    <div><dt>Fees per trade</dt><dd>${CONFIG.platformFeePct}% KIN + ${CONFIG.protocolFeePct}% Raydium<br><span class="muted">paid in ${i ? esc(T) : "the parent"}</span></dd></div>
+    <div><dt>After graduation</dt><dd>CPMM pool, LP burned</dd></div>`;
+  const tick = clean($("f-tick").value).toUpperCase(), name = $("f-name").value.trim();
+  const f = { mint: null, sample: true, name: name || "Your fork", sym: tick || "FORK", img: formImg, parent: m || RUNNERS[0], rate: 0, grad: false, fund: g, inCurve: 0, locked: 0, mcap: null, at: Date.now() };
+  $("f-row").innerHTML = rowHTML(f, { static: true });
+  updateGo();
+}
+function formReady(){
+  const tick = clean($("f-tick").value), name = $("f-name").value.trim();
+  if (!fParent || !info(fParent)) return "Paste a parent CA that has a market.";
+  if (name.length < 2) return "Give the fork a name.";
+  if (!/^[A-Z0-9]{2,10}$/.test(tick)) return "Ticker: 2 to 10 letters or digits.";
+  return "";
+}
+function updateGo(){
+  const b = $("f-go");
+  if (!wallet) b.textContent = "Connect wallet to launch";
+  else if (!CONFIG.launchUrl) b.textContent = "Launches open with $KIN";
+  else b.textContent = "Launch fork";
+  b.classList.toggle("off", !!wallet && !CONFIG.launchUrl);
+}
+$("f-parent").addEventListener("input", async () => {
+  const v = $("f-parent").value.trim(); $("f-err").hidden = true;
+  if (!v){ fParent = null; renderForm(); return; }
+  if (!isAddr(v)){ $("f-err").textContent = "That isn’t a Solana CA."; $("f-err").hidden = false; return; }
+  fParent = v; $("f-pinfo").innerHTML = `<span class="av">…</span><div class="t"><b class="muted">Looking up ${esc(short(v))}</b><small>DexScreener</small></div>`;
+  await loadPrices([v]);
+  if (!info(v)){ $("f-err").textContent = "No market found for that CA. A parent has to be trading already."; $("f-err").hidden = false; }
+  renderForm();
+});
+["f-name", "f-tick", "f-desc"].forEach(id => $(id).addEventListener("input", () => { if (id === "f-tick") $(id).value = $(id).value.toUpperCase().replace(/[^A-Z0-9]/g, ""); $("f-err").hidden = true; renderForm(); }));
+$("f-file").addEventListener("change", e => {
+  const file = e.target.files && e.target.files[0]; if (!file) return;
+  if (file.size > 4e6){ $("f-file-t").textContent = "Over 4 MB. Pick a smaller image."; return; }
+  const r = new FileReader(); r.onload = () => { formImg = r.result; $("f-thumb").innerHTML = `<img src="${formImg}" alt="">`; $("f-file-t").textContent = file.name; renderForm(); }; r.readAsDataURL(file);
+});
+$("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!wallet){ await connect(); return; }
+  const why = formReady(); if (why){ $("f-err").textContent = why; $("f-err").hidden = false; return; }
+  if (!CONFIG.launchUrl) return;
+  const u = `${CONFIG.launchUrl}${CONFIG.launchUrl.includes("?") ? "&" : "?"}parent=${encodeURIComponent(fParent)}&name=${encodeURIComponent($("f-name").value.trim())}&ticker=${encodeURIComponent(clean($("f-tick").value))}&wallet=${encodeURIComponent(wallet)}`;
+  const a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove();
+});
+
+/* ===== Wallet ===== */
+let wallet = null;
+function provider(){ return (window.phantom && window.phantom.solana) || (window.backpack && window.backpack.solana) || window.solflare || window.solana || null; }
+function toast(msg){ const t = $("w-toast"); t.innerHTML = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 5000); }
+async function connect(){
+  const p = provider();
+  if (!p){ toast("No Solana wallet found in this browser. Install <b>Phantom</b>, <b>Solflare</b> or <b>Backpack</b>, then reload."); return; }
+  try {
+    const r = await p.connect(); const pk = (r && r.publicKey) || p.publicKey;
+    if (!pk) throw new Error("no key");
+    wallet = pk.toString(); $("w-btn").textContent = short(wallet); $("w-btn").classList.add("pri");
+    updateGo();
+  } catch (e){ toast("Connection was cancelled."); }
+}
+$("w-btn").addEventListener("click", async () => {
+  if (wallet){ try { const p = provider(); p && p.disconnect && await p.disconnect(); } catch (e){} wallet = null; $("w-btn").textContent = "Connect wallet"; $("w-btn").classList.remove("pri"); updateGo(); toast("Disconnected."); return; }
+  connect();
+});
+document.addEventListener("click", e => { if (!e.target.closest(".wallet")) $("w-toast").hidden = true; });
+
+/* ===== $KIN row ===== */
+function copyText(text, btn){
+  const o = btn.dataset.l || (btn.dataset.l = btn.textContent);
+  const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = o, 1500); };
+  try { navigator.clipboard.writeText(text).then(done, () => { btn.textContent = "Copy failed"; setTimeout(() => btn.textContent = o, 1500); }); } catch (e){}
+}
+(function wire(){
+  const buy = CONFIG.buy || (KIN ? `https://raydium.io/launchpad/token/?mint=${KIN}` : null);
+  if (KIN){ $("kin-ca").textContent = KIN; $("kin-ca").classList.add("has"); $("kin-copy").hidden = false; $("kin-copy").addEventListener("click", e => copyText(KIN, e.currentTarget)); }
+  document.querySelectorAll("#kin-buy,.buy-l").forEach(a => { if (buy){ a.href = buy; a.target = "_blank"; a.rel = "noopener"; } });
+  if (!buy){ $("kin-buy").classList.add("off"); $("kin-buy").textContent = "Buy at launch"; }
+  if (CONFIG.x){ $("x-l").href = CONFIG.x; $("x-li").hidden = false; }
+  document.querySelectorAll(".docs-link").forEach(a => a.href = a.getAttribute("href").replace("docs.html", CONFIG.docs));
+  document.querySelectorAll(".grad-sol").forEach(e => e.textContent = CONFIG.gradSol);
+})();
+
+/* ===== Boot ===== */
+async function refresh(first){
+  if (LIVE){
+    try { forks = await loadLive(); forkMode = "live"; } catch (e){ if (!forks.length) forkMode = "error"; }
+    await loadPrices(parentsInFeed().concat(RUNNERS, sel ? [sel] : []));
+  } else {
+    await loadPrices(RUNNERS.concat(sel ? [sel] : []));
+    forks = previewForks(); forkMode = "preview";
+  }
+  if (first && !location.hash.startsWith("#p-")){ const gs = parentsInFeed().map(groupOf).sort((a, b) => (b.n - a.n) || (b.pct - a.pct)); if (gs[0] && gs[0].n){ sel = gs[0].mint; rcSel = topParent().mint; } }
+  renderFeed(); renderStats(); renderFamily(); renderReceipt(); renderForm(); renderFilter();
+}
+(async () => {
+  const h = location.hash.slice(1);
+  if (h.startsWith("p-") && isAddr(h.slice(2))){ sel = rcSel = h.slice(2); }
+  fParent = sel; $("f-parent").value = sel;
+  renderFeed(); renderStats(); renderForm();
+  await refresh(true);
+  if (h.startsWith("p-") && isAddr(h.slice(2))) $("family").scrollIntoView();
+  loadBuyback().then(renderStats);
+  setInterval(() => refresh(false), 30000);
+  setInterval(() => { if (forkMode !== "loading") renderFeed(); }, 15000);
+})();
+</script>
+</body>
+</html>
