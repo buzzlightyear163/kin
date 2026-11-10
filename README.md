@@ -1,6 +1,6 @@
 # KIN ($KIN) – sajten (v2, trading-app-design)
 
-"Every fork feeds its parent." En launchpad på Raydium LaunchLab där varje fork paras mot sin parents token i stället för SOL.
+"Every fork buys the original." En launchpad på Raydium LaunchLab där varje fork paras mot sin parents token i stället för SOL.
 
 ## Filer
 
